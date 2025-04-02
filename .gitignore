@@ -1,0 +1,31 @@
+# Composer paket bağımlılıkları
+/vendor/
+/public/vendor/
+
+# IDE ve editör dosyaları
+/.idea/
+/.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Çevre değişkenleri
+.env
+.env.backup
+
+# Cache ve log dosyaları
+*.log
+/logs/
+/.cache/
+
+# Sistem dosyaları
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Diğer
+/node_modules/
+.phpunit.result.cache
