@@ -1,6 +1,3 @@
-# Composer paket bağımlılıkları
-/vendor/
-/vendor/
 
 # IDE ve editör dosyaları
 /.idea/
