@@ -15,8 +15,8 @@ class ProductModel
     {
         // $data = ['name' => 'Pasta', 'stock' => 10, ... ]
         $product = R::dispense('products');
-        $product->name = isset($data['name']) ? $data['name'] : 'Unknown';
-        $product->stock = isset($data['stock']) ? $data['stock'] : 0;
+        $product->name = $data['name'] ?? 'Unknown';
+        $product->stock = $data['stock'] ?? 0;
         // vs...
         $id = R::store($product);
         return $id;

@@ -13,8 +13,8 @@ RUN a2enmod rewrite
 # 3) DocumentRoot'u /var/www/html/public yap
 RUN sed -i 's#/var/www/html#/var/www/html/public#' /etc/apache2/sites-available/000-default.conf
 
-# 4) AllowOverride None -> All
-RUN sed -i 's/AllowOverride None/AllowOverride All/i' /etc/apache2/apache2.conf
+# 4) AllowOverride None -> All (Doğru dosya yolunu kullanma)
+RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 
 # 5) Composer kur
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
@@ -23,3 +23,6 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
 
 # 6) Çalışma dizini
 WORKDIR /var/www/html
+
+# 7) Dosya izinlerini ayarla - Apache kullanıcısına yazma izni ver
+RUN chown -R www-data:www-data /var/www/html
