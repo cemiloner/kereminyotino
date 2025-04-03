@@ -1,4 +1,3 @@
-
 services:
   web:
     build: ./php
@@ -7,18 +6,30 @@ services:
       - "80:80"
     volumes:
       - ./:/var/www/html
+      - ./docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
+    entrypoint: ["/bin/bash", "/usr/local/bin/docker-entrypoint.sh"]
+    networks:
+      - app_network
     depends_on:
       - db
 
   db:
     image: postgres:latest
+    networks:
+      - app_network
     container_name: postgres_db
     environment:
       - POSTGRES_USER=myuser
       - POSTGRES_PASSWORD=mypassword
       - POSTGRES_DB=mydatabase
+    ports:
+      - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
 
 volumes:
   db-data:
+
+networks:
+  app_network:
+    driver: bridge
