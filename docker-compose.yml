@@ -8,11 +8,15 @@ services:
       - ./:/var/www/html
       - ./docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
     entrypoint: ["/bin/bash", "/usr/local/bin/docker-entrypoint.sh"]
+    networks:
+      - app_network
     depends_on:
       - db
 
   db:
     image: postgres:latest
+    networks:
+      - app_network
     container_name: postgres_db
     environment:
       - POSTGRES_USER=myuser
@@ -25,3 +29,7 @@ services:
 
 volumes:
   db-data:
+
+networks:
+  app_network:
+    driver: bridge

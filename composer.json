@@ -6,6 +6,7 @@
         }
     },
     "require": {
-        "gabordemooij/redbean": "^5.7"
+        "gabordemooij/redbean": "^5.7",
+        "firebase/php-jwt": "^6.11"
     }
 }

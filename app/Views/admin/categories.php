@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ürün Yönetimi</title>
+    <title>Kategori Yönetimi</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -97,12 +97,6 @@
         tr:hover {
             background-color: #f5f5f5;
         }
-        .product-image {
-            width: 70px;
-            height: 70px;
-            object-fit: cover;
-            border-radius: 5px;
-        }
         .empty-message {
             text-align: center;
             padding: 20px;
@@ -114,6 +108,13 @@
             display: flex;
             gap: 5px;
         }
+        .product-count {
+            background-color: #e0e0e0;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #555;
+        }
     </style>
 </head>
 <body>
@@ -123,8 +124,8 @@
             <h2>Admin Panel</h2>
             <ul>
                 <li><a href="/admin">Dashboard</a></li>
-                <li><a href="/admin/products" class="active">Ürünler</a></li>
-                <li><a href="/admin/categories">Kategoriler</a></li>
+                <li><a href="/admin/products">Ürünler</a></li>
+                <li><a href="/admin/categories" class="active">Kategoriler</a></li>
                 <li><a href="/admin/orders">Siparişler</a></li>
                 <li><a href="/admin/logout">Çıkış</a></li>
             </ul>
@@ -133,50 +134,36 @@
         <!-- Main Content Area -->
         <div class="main-content">
             <div class="header">
-                <h1>Ürün Yönetimi</h1>
-                <a href="/admin/products/create" class="btn">Yeni Ürün Ekle</a>
+                <h1>Kategori Yönetimi</h1>
+                <a href="/admin/categories/create" class="btn">Yeni Kategori Ekle</a>
             </div>
             
-            <?php if (!empty($products)): ?>
+            <?php if (!empty($categories)): ?>
                 <table>
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Resim</th>
-                            <th>Ürün Adı</th>
-                            <th>Fiyat</th>
-                            <th>Stok</th>
-                            <th>Kategori</th>
+                            <th>Kategori Adı</th>
+                            <th>Ürün Sayısı</th>
                             <th>İşlemler</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($products as $product): ?>
+                        <?php foreach ($categories as $category): ?>
                             <?php 
-                                // Kategori adını al
-                                $category = null;
-                                if (!empty($product->category_id)) {
-                                    $category = \App\Models\CategoryModel::find($product->category_id);
-                                }
+                                // İlgili kategorideki ürün sayısını bul
+                                $products = \App\Models\ProductModel::findByCategory($category->id);
+                                $productCount = count($products);
                             ?>
                             <tr>
-                                <td><?php echo $product->id; ?></td>
+                                <td><?php echo $category->id; ?></td>
+                                <td><?php echo htmlspecialchars($category->name); ?></td>
                                 <td>
-                                    <?php if (!empty($product->image)): ?>
-                                        <img src="<?php echo htmlspecialchars($product->image); ?>" alt="<?php echo htmlspecialchars($product->name); ?>" class="product-image">
-                                    <?php else: ?>
-                                        <div class="product-image" style="background-color: #eee; display: flex; align-items: center; justify-content: center; color: #999;">
-                                            Resim Yok
-                                        </div>
-                                    <?php endif; ?>
+                                    <span class="product-count"><?php echo $productCount; ?> ürün</span>
                                 </td>
-                                <td><?php echo htmlspecialchars($product->name); ?></td>
-                                <td><?php echo number_format($product->price, 2); ?> TL</td>
-                                <td><?php echo $product->stock; ?></td>
-                                <td><?php echo $category ? htmlspecialchars($category->name) : 'Kategorisiz'; ?></td>
                                 <td class="actions">
-                                    <a href="/admin/products/edit?id=<?php echo $product->id; ?>" class="btn btn-warning">Düzenle</a>
-                                    <a href="/admin/products/delete?id=<?php echo $product->id; ?>" class="btn btn-danger" onclick="return confirm('Bu ürünü silmek istediğinize emin misiniz?')">Sil</a>
+                                    <a href="/admin/categories/edit?id=<?php echo $category->id; ?>" class="btn btn-warning">Düzenle</a>
+                                    <a href="/admin/categories/delete?id=<?php echo $category->id; ?>" class="btn btn-danger" onclick="return confirm('Bu kategoriyi silmek istediğinize emin misiniz? Bağlı ürünler kategorisiz kalacaktır.')">Sil</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -184,8 +171,8 @@
                 </table>
             <?php else: ?>
                 <div class="empty-message">
-                    <p>Henüz hiç ürün eklenmemiş.</p>
-                    <a href="/admin/products/create" class="btn">Hemen Ürün Ekle</a>
+                    <p>Henüz hiç kategori eklenmemiş.</p>
+                    <a href="/admin/categories/create" class="btn">Hemen Kategori Ekle</a>
                 </div>
             <?php endif; ?>
         </div>

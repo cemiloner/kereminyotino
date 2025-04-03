@@ -1,92 +1,60 @@
 <?php
-// Hata raporlamasını aktif et (geliştirme ortamı için)
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-// Composer autoloader'ını dahil et
+// Composer autoloader
 require_once __DIR__ . '/../vendor/autoload.php';
 
-// RedBeanPHP için kısa alias tanımla - Autoloader ile yüklenecek
-use RedBeanPHP\R;
+// RedBeanPHP database connection
+require_once __DIR__ . '/../config/database.php';
 
-// PostgreSQL PDO bağlantısı
-try {
-    $host = 'db';
-    $dbname = 'mydatabase';
-    $user = 'myuser';
-    $pass = 'mypassword';
+// Request URI'yi analiz et
+$requestUri = $_SERVER['REQUEST_URI'];
+$requestUri = trim(parse_url($requestUri, PHP_URL_PATH), '/');
 
-    // Normal PDO bağlantısı
-    $dsn = "pgsql:host=$host;dbname=$dbname";
-    $pdo = new PDO($dsn, $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    echo "<div style='color: green; font-weight: bold;'>Veritabanına başarıyla bağlanıldı!</div>";
-
-    // RedBeanPHP ile veritabanı bağlantısı
-    R::setup('pgsql:host=db;dbname=mydatabase','myuser','mypassword');
-    echo "<div style='color: green; font-weight: bold;'>RedBeanPHP başarıyla yüklendi!</div>";
-
-    // Test amaçlı basit bir sorgu çalıştır
-    try {
-        $result = R::getCell("SELECT 1");
-        echo "<div style='color: green; font-weight: bold;'>Test sorgusu başarılı: $result</div>";
-    } catch (Exception $e) {
-        echo "<div style='color: orange; font-weight: bold;'>Test sorgusu çalışırken uyarı: " . $e->getMessage() . "</div>";
-    }
+// Route mapping - Basit bir routing mekanizması
+$routes = [
+    // Admin routes
+    'admin' => ['App\Controllers\AdminController', 'index'],
+    'admin/login' => ['App\Controllers\AdminController', 'login'],
+    'admin/logout' => ['App\Controllers\AdminController', 'logout'],
     
-} catch (PDOException $e) {
-    echo "<div style='color: red; font-weight: bold;'>Veritabanına bağlanılamadı: " . $e->getMessage() . "</div>";
-} catch (Exception $e) {
-    echo "<div style='color: red; font-weight: bold;'>Hata oluştu: " . $e->getMessage() . "</div>";
-}
+    // Product routes
+    'admin/products' => ['App\Controllers\AdminController', 'products'],
+    'admin/products/create' => ['App\Controllers\AdminController', 'productCreate'],
+    'admin/products/edit' => ['App\Controllers\AdminController', 'productEdit'],
+    'admin/products/delete' => ['App\Controllers\AdminController', 'productDelete'],
+    
+    // Category routes
+    'admin/categories' => ['App\Controllers\AdminController', 'categories'],
+    'admin/categories/create' => ['App\Controllers\AdminController', 'categoryCreate'],
+    'admin/categories/edit' => ['App\Controllers\AdminController', 'categoryEdit'],
+    'admin/categories/delete' => ['App\Controllers\AdminController', 'categoryDelete'],
+    
+    // Order routes
+    'admin/orders' => ['App\Controllers\AdminController', 'orders'],
+    'admin/orders/detail' => ['App\Controllers\AdminController', 'orderDetail'],
+    'admin/orders/update-status' => ['App\Controllers\AdminController', 'orderUpdateStatus'],
+    
+    // Default front routes (for customers)
+    '' => ['App\Controllers\HomeController', 'index'],
+    'menu' => ['App\Controllers\HomeController', 'menu'],
+    'order' => ['App\Controllers\HomeController', 'order'],
+];
 
-// Mevcut App namespace'indeki sınıflardan bazılarını kontrol et
-echo "<div style='margin-top: 20px; padding: 10px; background-color: #f5f5f5;'>";
-echo "<strong>Autoloader Durumu:</strong><br>";
-echo "HomeController sınıfı: " . (class_exists('\\App\\Controllers\\HomeController') ? 'Var' : 'Yok') . "<br>";
-echo "ProductModel sınıfı: " . (class_exists('\\App\\Models\\ProductModel') ? 'Var' : 'Yok') . "<br>";
-echo "</div>";
+// Admin route koruma middleware'i uygula
+App\Middleware\AuthMiddleware::protectAdminRoutes($requestUri);
 
-// URL yönlendirme işlemleri 
-// path parametresini al
-$path = $_GET['path'] ?? '';
-
-// Parametreleri parçala
-$segments = explode('/', trim($path, '/'));
-
-// Varsayılan değerler
-$controllerName = !empty($segments[0]) ? $segments[0] : 'home';
-$methodName     = !empty($segments[1]) ? $segments[1] : 'index';
-$idOrParam      = !empty($segments[2]) ? $segments[2] : null;
-
-// Controller sınıfı adı belirle
-$controllerClass = '\\App\\Controllers\\' . ucfirst($controllerName) . 'Controller';
-
-// Debug mesajı
-echo "<div style='margin-top: 10px;'>";
-echo "Aranan kontrolör: " . $controllerClass . "<br>";
-
-// Sınıfı var mı kontrol et
-if (class_exists($controllerClass)) {
+// İstek yapılan rota var mı?
+if (isset($routes[$requestUri])) {
+    // Controller ve metod bilgilerini al
+    list($controllerClass, $method) = $routes[$requestUri];
+    
+    // Controller örneğini oluştur
     $controller = new $controllerClass();
-
-    // Metot var mı kontrol et
-    if (method_exists($controller, $methodName)) {
-        // Çağır ve parametreyi ilet
-        $controller->$methodName($idOrParam);
-    } else {
-        echo "Metot bulunamadı: $methodName";
-    }
+    
+    // İlgili metodu çağır
+    call_user_func([$controller, $method]);
 } else {
-    echo "Kontrolör bulunamadı: $controllerClass";
-
-    // Mevcut kontrolörleri listele
-    echo "<br>Mevcut sınıflar:<br>";
-    foreach(get_declared_classes() as $class) {
-        if (str_starts_with($class, 'App\\Controllers\\')) {
-            echo "- $class<br>";
-        }
-    }
+    // 404 hatası
+    header('HTTP/1.0 404 Not Found');
+    echo '<h1>404 Not Found</h1>';
+    echo '<p>İstediğiniz sayfa bulunamadı.</p>';
 }
-echo "</div>";
