@@ -2,6 +2,9 @@
 // Composer autoloader
 require_once __DIR__ . '/../vendor/autoload.php';
 
+// Include helpers
+require_once __DIR__ . '/../app/Helpers/view_helper.php';
+
 // RedBeanPHP database connection
 require_once __DIR__ . '/../config/database.php';
 
@@ -51,7 +54,12 @@ if (isset($routes[$requestUri])) {
     $controller = new $controllerClass();
     
     // İlgili metodu çağır
-    call_user_func([$controller, $method]);
+    $response = call_user_func([$controller, $method]);
+    
+    // If the response is a string (from view helper), echo it
+    if (is_string($response)) {
+        echo $response;
+    }
 } else {
     // 404 hatası
     header('HTTP/1.0 404 Not Found');

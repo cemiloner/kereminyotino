@@ -8,7 +8,9 @@ class AdminController
 {
     public function index()
     {
-        require_once __DIR__ . '/../Views/admin/dashboard.php';
+        return view_with_layout('admin/dashboard', [
+            'title' => 'Admin Dashboard'
+        ]);
     }
 
     // ------------------ Authentication ------------------
@@ -31,13 +33,12 @@ class AdminController
                 exit;
             } else {
                 $error = 'Kullanıcı adı veya şifre hatalı!';
-                require_once __DIR__ . '/../Views/admin/login.php';
-                return;
+                return view('admin/login', ['error' => $error]);
             }
         }
         
-        // GET request ise login formu göster
-        require_once __DIR__ . '/../Views/admin/login.php';
+        // GET request ise login formu göster - Login sayfası için layout kullanmıyoruz
+        return view('admin/login');
     }
     
     public function logout()
@@ -56,7 +57,10 @@ class AdminController
     {
         // Tüm ürünleri göster
         $products = ProductModel::all();
-        require_once __DIR__ . '/../Views/admin/products.php';
+        return view_with_layout('admin/products', [
+            'products' => $products,
+            'title' => 'Ürün Listesi'
+        ]);
     }
     
     public function productCreate()
@@ -100,7 +104,10 @@ class AdminController
         $categories = \App\Models\CategoryModel::all();
         
         // Form göster
-        require_once __DIR__ . '/../Views/admin/product_form.php';
+        return view_with_layout('admin/product_form', [
+            'categories' => $categories,
+            'title' => 'Yeni Ürün Ekle'
+        ]);
     }
     
     public function productEdit($id = null)
@@ -163,7 +170,11 @@ class AdminController
         $categories = \App\Models\CategoryModel::all();
         
         // Form göster
-        require_once __DIR__ . '/../Views/admin/product_form.php';
+        return view_with_layout('admin/product_form', [
+            'product' => $product,
+            'categories' => $categories,
+            'title' => 'Ürün Düzenle: ' . $product->name
+        ]);
     }
     
     public function productDelete($id = null)
@@ -186,7 +197,10 @@ class AdminController
     {
         // Tüm kategorileri göster
         $categories = \App\Models\CategoryModel::all();
-        require_once __DIR__ . '/../Views/admin/categories.php';
+        return view_with_layout('admin/categories', [
+            'categories' => $categories,
+            'title' => 'Kategori Listesi'
+        ]);
     }
     
     public function categoryCreate()
@@ -209,7 +223,9 @@ class AdminController
         }
         
         // Form göster
-        require_once __DIR__ . '/../Views/admin/category_form.php';
+        return view_with_layout('admin/category_form', [
+            'title' => 'Yeni Kategori Ekle'
+        ]);
     }
     
     public function categoryEdit($id = null)
@@ -249,7 +265,10 @@ class AdminController
         }
         
         // Form göster
-        require_once __DIR__ . '/../Views/admin/category_form.php';
+        return view_with_layout('admin/category_form', [
+            'category' => $category,
+            'title' => 'Kategori Düzenle: ' . $category->name
+        ]);
     }
     
     public function categoryDelete($id = null)
@@ -272,7 +291,10 @@ class AdminController
     {
         // Tüm siparişleri göster
         $orders = \App\Models\OrderModel::all();
-        require_once __DIR__ . '/../Views/admin/orders.php';
+        return view_with_layout('admin/orders', [
+            'orders' => $orders,
+            'title' => 'Sipariş Listesi'
+        ]);
     }
     
     public function orderDetail($id = null)
@@ -295,7 +317,10 @@ class AdminController
         }
         
         // Sipariş detayını göster
-        require_once __DIR__ . '/../Views/admin/order_detail.php';
+        return view_with_layout('admin/order_detail', [
+            'order' => $order,
+            'title' => 'Sipariş Detayı #' . $id
+        ]);
     }
     
     public function orderUpdateStatus()
