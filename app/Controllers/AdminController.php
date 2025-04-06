@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Models\AuthModel;
 use App\Models\ProductModel;
+use RedBeanPHP\R;
 
 class AdminController
 {
@@ -287,14 +288,21 @@ class AdminController
     
     // ------------------ Orders Management ------------------
     
-    public function orders($id = null)
+    public function orders()
     {
-        // Tüm siparişleri göster
-        $orders = \App\Models\OrderModel::all();
-        return view_with_layout('admin/orders', [
-            'orders' => $orders,
-            'title' => 'Sipariş Listesi'
-        ]);
+        // Tüm siparişleri al ve ürün bilgilerini ilişkilendir
+        $orders = R::findAll('orders');
+        
+        foreach ($orders as $order) {
+            $order->product = R::load('products', $order->product_id);
+        }
+        
+        // View'e siparişleri gönder
+        ob_start();
+        include __DIR__ . '/../Views/admin/orders.php';
+        $content = ob_get_clean();
+        
+        echo $content;
     }
     
     public function orderDetail($id = null)

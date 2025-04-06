@@ -38,7 +38,7 @@ $routes = [
     
     // Default front routes (for customers)
     '' => ['App\Controllers\HomeController', 'index'],
-    'menu' => ['App\Controllers\HomeController', 'menu'],
+    'menu' => ['App\Controllers\HomeController', 'menu'],  // Menu route added here
     'order' => ['App\Controllers\HomeController', 'order'],
 ];
 

@@ -4,6 +4,7 @@ namespace App\Controllers;
 use App\Models\CategoryModel;
 use App\Models\ProductModel;
 use App\Models\OrderModel;
+use RedBeanPHP\R;
 
 class HomeController
 {
@@ -12,48 +13,62 @@ class HomeController
      */
     public function index()
     {
-        echo '<h1>Restoran Anasayfa</h1>';
-        echo '<p>Bu müşteri arayüzü henüz geliştirilmektedir.</p>';
-        echo '<p><a href="/admin">Admin Paneline Git</a></p>';
+        return view('home');
     }
-    
+
     /**
-     * Menü sayfası
+     * Menü sayfası (görünümle birlikte)
      */
     public function menu()
     {
-        $categories = CategoryModel::all();
+        // Kategorileri getir
+        $categories = R::findAll('categories');
         
-        echo '<h1>Restoran Menüsü</h1>';
+        // Ürünleri getir
+        $products = R::findAll('products');
         
-        foreach ($categories as $category) {
-            echo '<h2>' . htmlspecialchars($category->name) . '</h2>';
-            
-            // Kategoriye ait ürünleri getir
-            $products = ProductModel::findByCategory($category->id);
-            
-            if (count($products) > 0) {
-                echo '<ul>';
-                foreach ($products as $product) {
-                    echo '<li>' . htmlspecialchars($product->name) . ' - ' . 
-                         number_format($product->price, 2) . ' TL</li>';
-                }
-                echo '</ul>';
-            } else {
-                echo '<p>Bu kategoride henüz ürün bulunmamaktadır.</p>';
-            }
-        }
-        
-        echo '<p><a href="/">Anasayfaya Dön</a> | <a href="/admin">Admin Paneline Git</a></p>';
+        // Görünüm dosyasına gönder
+        return view('menu', [
+            'categories' => $categories,
+            'products' => $products
+        ]);
     }
-    
+
     /**
-     * Sipariş verme sayfası (basitleştirilmiş örnek)
+     * Sipariş verme sayfası
      */
     public function order()
     {
         echo '<h1>Sipariş Sayfası</h1>';
         echo '<p>Bu sipariş arayüzü henüz geliştirilmektedir.</p>';
         echo '<p><a href="/menu">Menüye Dön</a> | <a href="/">Anasayfaya Dön</a></p>';
+    }
+
+    public function feedback()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Form verilerini al
+            $name = $_POST['name'] ?? '';
+            $email = $_POST['email'] ?? '';
+            $message = $_POST['message'] ?? '';
+            
+            // Veritabanına kaydet
+            $feedback = R::dispense('feedback');
+            $feedback->name = $name;
+            $feedback->email = $email;
+            $feedback->message = $message;
+            $feedback->created_at = date('Y-m-d H:i:s');
+            
+            R::store($feedback);
+            
+            // Başarılı mesajıyla anasayfaya yönlendir
+            $_SESSION['success_message'] = 'Geri bildiriminiz için teşekkür ederiz!';
+            header('Location: /');
+            exit;
+        }
+        
+        // GET isteği için anasayfaya yönlendir
+        header('Location: /');
+        exit;
     }
 }
